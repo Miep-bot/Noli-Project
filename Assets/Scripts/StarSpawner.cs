@@ -35,8 +35,8 @@ public class StarSpawner : MonoBehaviour
     private void SpawnStars()
     {
         Vector3 pos1 = transform.position + new Vector3(0, 0, 0);
-        Vector3 pos2 = transform.position + new Vector3(-0.5f, 0, 0.5f);
-        Vector3 pos3 = transform.position + new Vector3(0.5f, 0, 0.5f);
+        Vector3 pos2 = transform.position + new Vector3(0, -0.5f, -0.5f);
+        Vector3 pos3 = transform.position + new Vector3(0, -0.5f, 0.5f);
 
         spawnedStars.Add(Instantiate(starPrefab, pos1, Quaternion.identity));
         spawnedStars.Add(Instantiate(starPrefab, pos2, Quaternion.identity));
@@ -53,5 +53,14 @@ public class StarSpawner : MonoBehaviour
         }
         spawnedStars.Clear();
         starsSpawned = false;
+    }
+
+    public Vector3 GetStarPosition(int index)
+    {
+        if (index >= 0 && index < spawnedStars.Count)
+        {
+            return spawnedStars[index].transform.position;
+        }
+        return Vector3.zero;
     }
 }
