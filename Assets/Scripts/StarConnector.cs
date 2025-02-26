@@ -2,41 +2,50 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-
 public class StarConnector : MonoBehaviour
 {
     public InputActionReference connectAction; // Button to hold for connecting
-    public GameObject objectToSpawn; // The object to spawn (fireball)
-    public Material lineMaterial; // Assign in Inspector (Line Material)
+    public InputActionReference throwAction;   // Button for throwing the fireball
+    public GameObject objectToSpawn;           // The object to spawn (fireball)
+    public Material lineMaterial;              // Line material
     public float lineWidth = 0.02f;
-    public StarSpawner starSpawner; // Reference to the StarSpawner script
-    public UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor rightRayInteractor; // Reference to the right VR controller(assign in Inspector)
-    private GameObject spawnedFireball; // The fireball that will spawn
-
+    public StarSpawner starSpawner;            // Reference to the StarSpawner script
+    public UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor rightRayInteractor; // Right VR controller reference
+    private GameObject spawnedFireball;        // Fireball that will spawn
     private LineRenderer currentLine;
     private List<Vector3> linePoints = new List<Vector3>();
-    private List<GameObject> allLines = new List<GameObject>(); // Store all lines
+    private List<GameObject> allLines = new List<GameObject>();
     private bool isConnecting = false;
-    private Transform lastStar; // The last star hovered over
-    private int connectedStarsCount = 0; // Track how many stars are connected
+    private Transform lastStar;
+    private int connectedStarsCount = 0;
+
+    // Variables for throwing mechanics
+    private Vector3 lastControllerPosition;
+    private Vector3 controllerVelocity;
+    private bool isThrowing = false;
+    private bool isFireballThrown = false; // Flag to check if the fireball is thrown
 
     private void OnEnable()
     {
         connectAction.action.performed += StartConnecting;
         connectAction.action.canceled += StopConnecting;
+        throwAction.action.started += StartThrowing; // Start tracking the controller for throwing
+        throwAction.action.canceled += StopThrowing; // When button is released, throw the fireball
     }
 
     private void OnDisable()
     {
         connectAction.action.performed -= StartConnecting;
         connectAction.action.canceled -= StopConnecting;
+        throwAction.action.started -= StartThrowing;
+        throwAction.action.canceled -= StopThrowing;
     }
 
     private void StartConnecting(InputAction.CallbackContext context)
     {
         isConnecting = true;
         linePoints.Clear();
-        connectedStarsCount = 0; // Reset connected stars count
+        connectedStarsCount = 0;
         lastStar = null;
         CreateNewLine();
     }
@@ -48,6 +57,27 @@ public class StarConnector : MonoBehaviour
         ClearAllLines();
     }
 
+    private void StartThrowing(InputAction.CallbackContext context)
+    {
+        // Start tracking the controller movement for throwing
+        if (spawnedFireball != null) // Only track if the fireball is spawned
+        {
+            isThrowing = true;
+            lastControllerPosition = rightRayInteractor.transform.position;
+            Debug.Log("Throwing started"); // Debugging line
+        }
+    }
+
+    private void StopThrowing(InputAction.CallbackContext context)
+    {
+        if (isThrowing && spawnedFireball != null)
+        {
+            ThrowFireball();
+        }
+        isThrowing = false;
+        Debug.Log("Throwing stopped"); // Debugging line
+    }
+
     private void CreateNewLine()
     {
         GameObject lineObj = new GameObject("ConnectionLine");
@@ -56,7 +86,6 @@ public class StarConnector : MonoBehaviour
         currentLine.startWidth = lineWidth;
         currentLine.endWidth = lineWidth;
         currentLine.positionCount = 0;
-
         allLines.Add(lineObj);
     }
 
@@ -64,6 +93,11 @@ public class StarConnector : MonoBehaviour
     {
         if (isConnecting)
         {
+            if (linePoints.Contains(starTransform.position))
+            {
+                return;
+            }
+
             if (lastStar != null && lastStar != starTransform)
             {
                 linePoints.Add(starTransform.position);
@@ -77,7 +111,6 @@ public class StarConnector : MonoBehaviour
             lastStar = starTransform;
             connectedStarsCount++;
 
-            // Check if all stars are connected in the correct order
             if (connectedStarsCount == 3 && IsCorrectOrder())
             {
                 SpawnObjectNextToController();
@@ -93,14 +126,12 @@ public class StarConnector : MonoBehaviour
 
     private bool IsCorrectOrder()
     {
-        // Get the positions of the stars from the StarSpawner
         if (starSpawner != null)
         {
-            Vector3 pos1 = starSpawner.GetStarPosition(0); // Get pos1 from StarSpawner
-            Vector3 pos2 = starSpawner.GetStarPosition(1); // Get pos2 from StarSpawner
-            Vector3 pos3 = starSpawner.GetStarPosition(2); // Get pos3 from StarSpawner
+            Vector3 pos1 = starSpawner.GetStarPosition(0);
+            Vector3 pos2 = starSpawner.GetStarPosition(1);
+            Vector3 pos3 = starSpawner.GetStarPosition(2);
 
-            // Verify the order of positions matches the sequence: pos1, pos2, pos3
             return (linePoints.Count == 3 &&
                     linePoints[0] == pos1 &&
                     linePoints[1] == pos2 &&
@@ -111,35 +142,95 @@ public class StarConnector : MonoBehaviour
 
     private void SpawnObjectNextToController()
     {
-        // Ensure the rightRayInteractor is assigned
         if (rightRayInteractor != null)
         {
-            // Get the position of the right controller using the ray interactor's transform
-            Vector3 controllerPosition = rightRayInteractor.transform.position;
-            Vector3 spawnOffset = new Vector3(0.5f, 0, 0); // Adjust this offset as needed
-            Vector3 spawnPosition = controllerPosition + spawnOffset;
+            Transform controllerTransform = rightRayInteractor.transform;
+            Vector3 spawnPosition = controllerTransform.position + controllerTransform.forward * 0.2f;
 
-            // Instantiate the fireball (object) at the spawn position
-            spawnedFireball = Instantiate(objectToSpawn, spawnPosition, Quaternion.identity);
-        }
-        else
-        {
-            Debug.LogError("Right Ray Interactor is not assigned!");
+            if (spawnedFireball != null)
+            {
+                Destroy(spawnedFireball); // Destroy any previous fireball
+            }
+
+            spawnedFireball = Instantiate(objectToSpawn, spawnPosition, controllerTransform.rotation);
+            isFireballThrown = false; // Reset flag so new fireball follows the controller
+
+            if (spawnedFireball != null)
+            {
+                Rigidbody fireballRigidbody = spawnedFireball.GetComponent<Rigidbody>();
+                if (fireballRigidbody != null)
+                {
+                    fireballRigidbody.isKinematic = true;
+                    fireballRigidbody.useGravity = false;
+                }
+
+                AttachFireballToController();
+
+                if (starSpawner != null)
+                {
+                    starSpawner.RemoveStars();
+                }
+                ClearAllLines();
+                Debug.Log("Fireball spawned successfully!");
+            }
         }
     }
 
-    private void Update()
+    private void AttachFireballToController()
     {
-        // If the fireball has spawned, make it follow the right controller
         if (spawnedFireball != null && rightRayInteractor != null)
         {
-            // Get the position of the right controller using the ray interactor's transform
-            Vector3 controllerPosition = rightRayInteractor.transform.position;
-            Vector3 spawnOffset = new Vector3(0.5f, 0, 0); // Adjust this offset as needed
-            Vector3 spawnPosition = controllerPosition + spawnOffset;
+            // Attach the fireball to the controller (keep it close to the controller's position)
+            spawnedFireball.transform.position = rightRayInteractor.transform.position + rightRayInteractor.transform.forward * 0.2f;
+            spawnedFireball.transform.rotation = rightRayInteractor.transform.rotation;
+        }
+    }
 
-            // Update the fireball's position to follow the controller
-            spawnedFireball.transform.position = spawnPosition;
+    private void ThrowFireball()
+    {
+        if (spawnedFireball != null)
+        {
+            isFireballThrown = true; // Stop the fireball from following the controller
+            Rigidbody fireballRigidbody = spawnedFireball.GetComponent<Rigidbody>();
+
+            if (fireballRigidbody != null)
+            {
+                fireballRigidbody.isKinematic = false;
+                fireballRigidbody.useGravity = true;
+
+                Vector3 throwDirection = smoothedVelocity.normalized;
+                float throwSpeed = smoothedVelocity.magnitude;
+
+                float speedMultiplier = 10f; // Adjust this if needed
+
+                fireballRigidbody.AddForce(throwDirection * throwSpeed * speedMultiplier, ForceMode.VelocityChange);
+                Debug.Log("Fireball thrown with velocity: " + fireballRigidbody.velocity);
+            }
+            else
+            {
+                Debug.LogError("Fireball does not have a Rigidbody component!");
+            }
+        }
+    }
+
+    private Vector3 previousControllerPosition;
+    private Vector3 smoothedVelocity;
+
+    private void Update()
+    {
+        if (rightRayInteractor != null)
+        {
+            Vector3 currentControllerPosition = rightRayInteractor.transform.position;
+            Vector3 rawVelocity = (currentControllerPosition - previousControllerPosition) / Time.deltaTime;
+            smoothedVelocity = Vector3.Lerp(smoothedVelocity, rawVelocity, 0.1f); // Smooth out the velocity
+            previousControllerPosition = currentControllerPosition;
+        }
+
+        if (spawnedFireball != null && !isFireballThrown)
+        {
+            Transform controllerTransform = rightRayInteractor.transform;
+            spawnedFireball.transform.position = controllerTransform.position + controllerTransform.forward * 0.2f;
+            spawnedFireball.transform.rotation = controllerTransform.rotation;
         }
     }
 
