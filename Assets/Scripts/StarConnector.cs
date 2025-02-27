@@ -89,6 +89,8 @@ public class StarConnector : MonoBehaviour
         allLines.Add(lineObj);
     }
 
+    public GameObject iceCubePrefab; // Assign Ice Cube Prefab in Inspector
+
     public void OnHoverEnter(Transform starTransform)
     {
         if (isConnecting)
@@ -111,9 +113,13 @@ public class StarConnector : MonoBehaviour
             lastStar = starTransform;
             connectedStarsCount++;
 
-            if (connectedStarsCount == 3 && IsCorrectOrder())
+            if (connectedStarsCount == 3 && IsTriangle())
             {
-                SpawnObjectNextToController();
+                SpawnObjectNextToController(objectToSpawn); // Spawn Fireball
+            }
+            else if (connectedStarsCount == 4 && IsSquare())
+            {
+                SpawnObjectNextToController(iceCubePrefab); // Spawn Ice Cube
             }
         }
     }
@@ -124,7 +130,7 @@ public class StarConnector : MonoBehaviour
         currentLine.SetPositions(linePoints.ToArray());
     }
 
-    private bool IsCorrectOrder()
+    private bool IsTriangle()
     {
         if (starSpawner != null)
         {
@@ -140,38 +146,52 @@ public class StarConnector : MonoBehaviour
         return false;
     }
 
-    private void SpawnObjectNextToController()
+    private bool IsSquare()
     {
-        if (rightRayInteractor != null)
+        if (starSpawner != null)
+        {
+            Vector3 pos1 = starSpawner.GetStarPosition(3);
+            Vector3 pos2 = starSpawner.GetStarPosition(4);
+            Vector3 pos3 = starSpawner.GetStarPosition(5);
+            Vector3 pos4 = starSpawner.GetStarPosition(6);
+
+            return (linePoints.Count == 4 &&
+                    linePoints[0] == pos1 &&
+                    linePoints[1] == pos2 &&
+                    linePoints[2] == pos3 &&
+                    linePoints[3] == pos4);
+        }
+        return false;
+    }
+
+    private void SpawnObjectNextToController(GameObject spellPrefab)
+    {
+        if (rightRayInteractor != null && spellPrefab != null)
         {
             Transform controllerTransform = rightRayInteractor.transform;
             Vector3 spawnPosition = controllerTransform.position + controllerTransform.forward * 0.2f;
 
-            if (spawnedFireball != null)
+            if (spawnedFireball != null) // Destroy previous spell object
             {
-                Destroy(spawnedFireball); // Destroy any previous fireball
+                Destroy(spawnedFireball);
             }
 
-            spawnedFireball = Instantiate(objectToSpawn, spawnPosition, controllerTransform.rotation);
-            isFireballThrown = false; // Reset flag so new fireball follows the controller
+            spawnedFireball = Instantiate(spellPrefab, spawnPosition, controllerTransform.rotation);
+            isFireballThrown = false;
 
             if (spawnedFireball != null)
             {
-                Rigidbody fireballRigidbody = spawnedFireball.GetComponent<Rigidbody>();
-                if (fireballRigidbody != null)
+                Rigidbody spellRigidbody = spawnedFireball.GetComponent<Rigidbody>();
+                if (spellRigidbody != null)
                 {
-                    fireballRigidbody.isKinematic = true;
-                    fireballRigidbody.useGravity = false;
+                    spellRigidbody.isKinematic = true;
+                    spellRigidbody.useGravity = false;
                 }
 
                 AttachFireballToController();
-
-                if (starSpawner != null)
-                {
-                    starSpawner.RemoveStars();
-                }
+                starSpawner.RemoveStars();
                 ClearAllLines();
-                Debug.Log("Fireball spawned successfully!");
+                Debug.Log(spellPrefab.name + " spawned successfully!");
             }
         }
     }
@@ -190,7 +210,7 @@ public class StarConnector : MonoBehaviour
     {
         if (spawnedFireball != null)
         {
-            isFireballThrown = true; // Stop the fireball from following the controller
+            isFireballThrown = true;
             Rigidbody fireballRigidbody = spawnedFireball.GetComponent<Rigidbody>();
 
             if (fireballRigidbody != null)
@@ -198,13 +218,34 @@ public class StarConnector : MonoBehaviour
                 fireballRigidbody.isKinematic = false;
                 fireballRigidbody.useGravity = true;
 
+                Debug.Log($"smoothedVelocity: {smoothedVelocity} (Magnitude: {smoothedVelocity.magnitude})");
+
+                if (smoothedVelocity.magnitude < 0.01f) // Prevent weak or invalid throws
+                {
+                    Debug.LogWarning("Throwing failed: smoothedVelocity is too small.");
+                    return;
+                }
+
                 Vector3 throwDirection = smoothedVelocity.normalized;
                 float throwSpeed = smoothedVelocity.magnitude;
 
-                float speedMultiplier = 10f; // Adjust this if needed
+                if (float.IsNaN(throwDirection.x) || float.IsNaN(throwDirection.y) || float.IsNaN(throwDirection.z))
+                {
+                    Debug.LogError("Throwing failed: throwDirection is NaN.");
+                    return;
+                }
+                if (float.IsNaN(throwSpeed))
+                {
+                    Debug.LogError("Throwing failed: throwSpeed is NaN.");
+                    return;
+                }
 
-                fireballRigidbody.AddForce(throwDirection * throwSpeed * speedMultiplier, ForceMode.VelocityChange);
-                Debug.Log("Fireball thrown with velocity: " + fireballRigidbody.velocity);
+                float speedMultiplier = 10f;
+                Vector3 forceToApply = throwDirection * throwSpeed * speedMultiplier;
+
+                Debug.Log($"Throwing fireball with force: {forceToApply}");
+
+                fireballRigidbody.AddForce(forceToApply, ForceMode.VelocityChange);
             }
             else
             {
@@ -221,8 +262,18 @@ public class StarConnector : MonoBehaviour
         if (rightRayInteractor != null)
         {
             Vector3 currentControllerPosition = rightRayInteractor.transform.position;
-            Vector3 rawVelocity = (currentControllerPosition - previousControllerPosition) / Time.deltaTime;
-            smoothedVelocity = Vector3.Lerp(smoothedVelocity, rawVelocity, 0.1f); // Smooth out the velocity
+            float deltaTime = Time.deltaTime;
+
+            if (deltaTime > 0) // Prevent division by zero
+            {
+                Vector3 rawVelocity = (currentControllerPosition - previousControllerPosition) / deltaTime;
+
+                if (rawVelocity.magnitude > 0.01f) // Avoid extremely small values
+                {
+                    smoothedVelocity = Vector3.Lerp(smoothedVelocity, rawVelocity, 0.1f); // Smooth out velocity
+                }
+            }
+
             previousControllerPosition = currentControllerPosition;
         }
 

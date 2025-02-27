@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class StarSpawner : MonoBehaviour
 {
@@ -9,12 +10,25 @@ public class StarSpawner : MonoBehaviour
     public Transform cameraTransform; // Assign the XR Rig Camera (Player's Headset) in Inspector
     public float spawnDistance = 10f; // Distance in front of the player
     public float triangleSize = 0.5f; // Adjust to control triangle size
+    public Image transparentImage;
 
     private bool starsSpawned = false;
     private List<GameObject> spawnedStars = new List<GameObject>();
 
+    public void ShowTransparentImage()
+    {
+        transparentImage.gameObject.SetActive(true);
+    }
+
+    // Call this when you want to hide the transparent image
+    public void HideTransparentImage()
+    {
+        transparentImage.gameObject.SetActive(false);
+    }
+
     private void OnEnable()
     {
+        HideTransparentImage();
         spawnAction.action.performed += ToggleStars;
     }
 
@@ -37,31 +51,60 @@ public class StarSpawner : MonoBehaviour
 
     private void SpawnStars()
     {
+        Time.timeScale = 0f;
+        ShowTransparentImage();
+
         if (cameraTransform == null)
         {
             Debug.LogError("Camera Transform not assigned!");
             return;
         }
 
-        // Get the forward, right, and down directions relative to the player's view
-        Vector3 forward = cameraTransform.forward;
-        Vector3 right = cameraTransform.right;
-        Vector3 down = -cameraTransform.up; // Downward direction
+        // Get directions based on camera orientation
+        Vector3 forward = cameraTransform.forward;  // Player's forward direction
+        Vector3 right = cameraTransform.right;      // Player's right direction
+        Vector3 down = -cameraTransform.up;         // Downward direction
 
-        // First star (Anchor Point) - Spawns in front of the player
-        Vector3 pos1 = cameraTransform.position + forward * spawnDistance;
-        GameObject star1 = Instantiate(starPrefab, pos1, Quaternion.identity);
+        float shapeSpacing = 0.7f; // Distance between the two shapes
+        float shapeSize = 0.5f; // Size of the shapes
+
+        // Find the central position where both shapes will spawn
+        Vector3 centerPos = cameraTransform.position + forward * spawnDistance;
+
+        // FIREBALL TRIANGLE (Left Side)
+        Vector3 triangleCenter = centerPos - right * shapeSpacing;
+
+        // Star positions for the triangle
+        Vector3 triPos1 = triangleCenter;
+        Vector3 triPos2 = triangleCenter + (-right * shapeSize * 0.5f + down * shapeSize); // Bottom-left
+        Vector3 triPos3 = triangleCenter + (right * shapeSize * 0.5f + down * shapeSize);  // Bottom-right
+
+        GameObject star1 = Instantiate(starPrefab, triPos1, Quaternion.identity);
+        GameObject star2 = Instantiate(starPrefab, triPos2, Quaternion.identity);
+        GameObject star3 = Instantiate(starPrefab, triPos3, Quaternion.identity);
+
         spawnedStars.Add(star1);
-
-        // Position the other two stars RELATIVE to the first one, but aligned with the player's perspective
-        Vector3 pos2 = pos1 + (-right * triangleSize + down * triangleSize); // Left-bottom
-        Vector3 pos3 = pos1 + (right * triangleSize + down * triangleSize);  // Right-bottom
-
-        GameObject star2 = Instantiate(starPrefab, pos2, Quaternion.identity);
-        GameObject star3 = Instantiate(starPrefab, pos3, Quaternion.identity);
-
         spawnedStars.Add(star2);
         spawnedStars.Add(star3);
+
+        // ICE CUBE SQUARE (Right Side)
+        Vector3 squareCenter = centerPos + right * shapeSpacing;
+
+        // Star positions for the square
+        Vector3 sqPos1 = squareCenter + (-right * shapeSize * 0.5f + -down * shapeSize * 0.5f); // Top-left
+        Vector3 sqPos2 = squareCenter + (right * shapeSize * 0.5f + -down * shapeSize * 0.5f);  // Top-right
+        Vector3 sqPos3 = squareCenter + (-right * shapeSize * 0.5f + down * shapeSize * 0.5f); // Bottom-left
+        Vector3 sqPos4 = squareCenter + (right * shapeSize * 0.5f + down * shapeSize * 0.5f); // Bottom-right
+
+        GameObject star4 = Instantiate(starPrefab, sqPos1, Quaternion.identity);
+        GameObject star5 = Instantiate(starPrefab, sqPos2, Quaternion.identity);
+        GameObject star6 = Instantiate(starPrefab, sqPos3, Quaternion.identity);
+        GameObject star7 = Instantiate(starPrefab, sqPos4, Quaternion.identity);
+
+        spawnedStars.Add(star4);
+        spawnedStars.Add(star5);
+        spawnedStars.Add(star6);
+        spawnedStars.Add(star7);
 
         starsSpawned = true;
     }
@@ -74,6 +117,8 @@ public class StarSpawner : MonoBehaviour
         }
         spawnedStars.Clear();
         starsSpawned = false;
+        Time.timeScale = 1f;
+        HideTransparentImage();
     }
 
     public Vector3 GetStarPosition(int index)
