@@ -65,8 +65,8 @@ public class StarSpawner : MonoBehaviour
         Vector3 right = cameraTransform.right;      // Player's right direction
         Vector3 down = -cameraTransform.up;         // Downward direction
 
-        float shapeSpacing = 0.7f; // Distance between the two shapes
-        float shapeSize = 0.5f; // Size of the shapes
+        float shapeSpacing = 0.4f; // Distance between the two shapes
+        float shapeSize = 0.3f; // Size of the shapes
 
         // Find the central position where both shapes will spawn
         Vector3 centerPos = cameraTransform.position + forward * spawnDistance;
@@ -75,9 +75,9 @@ public class StarSpawner : MonoBehaviour
         Vector3 triangleCenter = centerPos - right * shapeSpacing;
 
         // Star positions for the triangle
-        Vector3 triPos1 = triangleCenter;
-        Vector3 triPos2 = triangleCenter + (-right * shapeSize * 0.5f + down * shapeSize); // Bottom-left
-        Vector3 triPos3 = triangleCenter + (right * shapeSize * 0.5f + down * shapeSize);  // Bottom-right
+        Vector3 triPos1 = triangleCenter + ((-down / 2) * shapeSize * 0.5f);
+        Vector3 triPos2 = triangleCenter + (-right * shapeSize * 0.5f + (down / 2) * shapeSize); // Bottom-left
+        Vector3 triPos3 = triangleCenter + (right * shapeSize * 0.5f + (down / 2) * shapeSize);  // Bottom-right
 
         GameObject star1 = Instantiate(starPrefab, triPos1, Quaternion.identity);
         GameObject star2 = Instantiate(starPrefab, triPos2, Quaternion.identity);

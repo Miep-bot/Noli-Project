@@ -8,6 +8,7 @@ public class EnemyMovement : MonoBehaviour
     public float moveDistance = 1f;   // How far the enemy moves up and down
     private Vector3 startPosition;    // Starting position of the enemy
     private float timeElapsed;        // Time tracking for sine wave movement
+    public bool CanMove;
 
     private void Start()
     {
@@ -17,11 +18,18 @@ public class EnemyMovement : MonoBehaviour
 
     private void Update()
     {
-        // Move the enemy up and down using a sine wave function
-        timeElapsed += Time.deltaTime * moveSpeed;
-        float offsetY = Mathf.Sin(timeElapsed) * moveDistance;
+        if (CanMove)
+        {
+            // Move the enemy up and down using a sine wave function
+            timeElapsed += Time.deltaTime * moveSpeed;
+            float offsetY = Mathf.Cos(timeElapsed) * moveDistance;
 
-        // Update the position based on sine wave for smooth up and down movement
-        transform.position = new Vector3(startPosition.x, startPosition.y + offsetY, startPosition.z);
+            // Update the position based on sine wave for smooth up and down movement
+            transform.position = new Vector3(startPosition.x, startPosition.y + offsetY, startPosition.z);
+        }
+        else
+        {
+            transform.position = startPosition;
+        }
     }
 }

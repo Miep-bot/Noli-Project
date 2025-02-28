@@ -13,6 +13,8 @@ public class EnemyBehavior : MonoBehaviour
     public float currentHealth;     // Current Health (can be modified in the inspector)
     public GameObject healthBar;    // Reference to the health bar object
     public RectTransform healthBarFill; // Transform for the fill part of the health bar (scale it to show health)
+    public EnemyRespawner respawner;
+    private Vector3 startPosition;
 
     public EnemyMovement enemy;
 
@@ -33,16 +35,35 @@ public class EnemyBehavior : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        enemy = GameObject.FindWithTag("Enemy")?.GetComponent<EnemyMovement>();
+
+        // Initialize health
+        currentHealth = maxHealth;
+
+        // Get the material component from the enemy
+        enemyMaterial = GetComponent<Renderer>().material;
+        originalColor = enemyMaterial.color;
+
+        if (healthBarFill != null)
+        {
+            UpdateHealthBar();
+        }
+
+        startPosition = transform.position;
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Fireball"))
         {
             // Handle the fireball hit
             if (colorChangeCoroutine != null) StopCoroutine(colorChangeCoroutine);
-            colorChangeCoroutine = StartCoroutine(FlashColor(collision.gameObject.GetComponent<Renderer>().material.color, 5, 1f, 0.1f));
+            colorChangeCoroutine = StartCoroutine(FlashColor(collision.gameObject.GetComponent<Renderer>().material.color, 8, 1f, 0.1f));
 
             // Deduct health on fireball hit
-            TakeDamage(10f);  // For example, fireball does 10 damage
+            TakeDamage(6f);  // For example, fireball does 10 damage
         }
         else if (collision.gameObject.CompareTag("IceCube"))
         {
@@ -51,7 +72,7 @@ public class EnemyBehavior : MonoBehaviour
             colorChangeCoroutine = StartCoroutine(FreezeEffect(collision.gameObject.GetComponent<Renderer>().material.color, 4f));
 
             // Deduct health on ice cube hit
-            TakeDamage(5f);   // For example, ice cube does 5 damage
+            TakeDamage(10f);   // For example, ice cube does 5 damage
         }
     }
 
@@ -81,15 +102,31 @@ public class EnemyBehavior : MonoBehaviour
     {
         currentHealth -= amount;
 
-        // Ensure health doesn't drop below 0
-        if (currentHealth < 0f)
+        if (currentHealth != 0)
         {
-            currentHealth = 0f;
-            // You can add death behavior here (e.g., destroy the enemy, play death animation, etc.)
+            if (currentHealth < 0f)
+            {
+                currentHealth = 0f;
+                Die();
+            }
         }
+        else
+        {
+            Die();
+        }
+        
 
         // Update the health bar
         UpdateHealthBar();
+    }
+
+    private void Die()
+    {
+        // Notify the Respawn Script to handle respawning
+        if (respawner != null)
+        {
+            respawner.RespawnEnemy(gameObject, startPosition);
+        }
     }
 
     // Function to update the health bar
