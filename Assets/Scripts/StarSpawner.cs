@@ -15,6 +15,8 @@ public class StarSpawner : MonoBehaviour
     private bool starsSpawned = false;
     private List<GameObject> spawnedStars = new List<GameObject>();
 
+    public Color firstStarColor = Color.blue;
+
     public void ShowTransparentImage()
     {
         transparentImage.gameObject.SetActive(true);
@@ -80,6 +82,8 @@ public class StarSpawner : MonoBehaviour
         Vector3 triPos3 = triangleCenter + (right * shapeSize * 0.5f + (down / 2) * shapeSize);  // Bottom-right
 
         GameObject star1 = Instantiate(starPrefab, triPos1, Quaternion.identity);
+        star1.GetComponent<Renderer>().material.color = firstStarColor;
+
         GameObject star2 = Instantiate(starPrefab, triPos2, Quaternion.identity);
         GameObject star3 = Instantiate(starPrefab, triPos3, Quaternion.identity);
 
@@ -97,6 +101,8 @@ public class StarSpawner : MonoBehaviour
         Vector3 sqPos4 = squareCenter + (right * shapeSize * 0.5f + down * shapeSize * 0.5f); // Bottom-right
 
         GameObject star4 = Instantiate(starPrefab, sqPos1, Quaternion.identity);
+        star4.GetComponent<Renderer>().material.color = firstStarColor;
+
         GameObject star5 = Instantiate(starPrefab, sqPos2, Quaternion.identity);
         GameObject star6 = Instantiate(starPrefab, sqPos3, Quaternion.identity);
         GameObject star7 = Instantiate(starPrefab, sqPos4, Quaternion.identity);

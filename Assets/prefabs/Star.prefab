@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 5085940077961501049}
   - component: {fileID: -2288366637684199688}
   m_Layer: 0
-  m_Name: Star test
+  m_Name: Star
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -239,4 +239,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   growFactor: 1.2
   growSpeed: 5
-  hoverColor: {r: 0.4509434, g: 1, b: 0.98134625, a: 1}
+  hoverColor: {r: 0, g: 0.88639784, b: 1, a: 1}
