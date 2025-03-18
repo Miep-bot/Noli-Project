@@ -9,6 +9,7 @@ TagManager:
   - Fireball
   - IceCube
   - Enemy
+  - Enemy Moving
   layers:
   - Default
   - TransparentFX

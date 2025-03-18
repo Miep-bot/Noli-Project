@@ -37,7 +37,7 @@ public class EnemyBehavior : MonoBehaviour
 
     private void OnEnable()
     {
-        enemy = GameObject.FindWithTag("Enemy")?.GetComponent<EnemyMovement>();
+        enemy = GameObject.FindWithTag("Enemy Moving")?.GetComponent<EnemyMovement>();
 
         // Initialize health
         currentHealth = maxHealth;
@@ -58,21 +58,23 @@ public class EnemyBehavior : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Fireball"))
         {
-            // Handle the fireball hit
             if (colorChangeCoroutine != null) StopCoroutine(colorChangeCoroutine);
             colorChangeCoroutine = StartCoroutine(FlashColor(collision.gameObject.GetComponent<Renderer>().material.color, 8, 1f, 0.1f));
 
-            // Deduct health on fireball hit
-            TakeDamage(6f);  // For example, fireball does 10 damage
+            TakeDamage(6f);
         }
         else if (collision.gameObject.CompareTag("IceCube"))
         {
-            // Handle the ice cube hit
-            if (colorChangeCoroutine != null) StopCoroutine(colorChangeCoroutine);
-            colorChangeCoroutine = StartCoroutine(FreezeEffect(collision.gameObject.GetComponent<Renderer>().material.color, 4f));
+            // **Ensure correct enemy reference**
+            EnemyMovement enemyMovement = GetComponent<EnemyMovement>();
 
-            // Deduct health on ice cube hit
-            TakeDamage(10f);   // For example, ice cube does 5 damage
+            if (enemyMovement != null)
+            {
+                if (colorChangeCoroutine != null) StopCoroutine(colorChangeCoroutine);
+                colorChangeCoroutine = StartCoroutine(FreezeEffect(collision.gameObject.GetComponent<Renderer>().material.color, 4f, enemyMovement));
+
+                TakeDamage(10f);
+            }
         }
     }
 
@@ -88,13 +90,18 @@ public class EnemyBehavior : MonoBehaviour
         }
     }
 
-    private IEnumerator FreezeEffect(Color iceColor, float duration)
+    private IEnumerator FreezeEffect(Color iceColor, float duration, EnemyMovement enemyMovement)
     {
         enemyMaterial.color = iceColor;
-        enemy.moveSpeed = 0.5f;
+
+        // **Make sure to slow the correct enemy**
+        float originalSpeed = enemyMovement.moveSpeed;
+        enemyMovement.moveSpeed *= 0.5f;  // Slow enemy down to half speed
+
         yield return new WaitForSeconds(duration);
+
         enemyMaterial.color = originalColor;
-        enemy.moveSpeed = 2f;
+        enemyMovement.moveSpeed = originalSpeed; // Restore original speed
     }
 
     // Function to handle damage and update health
@@ -125,7 +132,9 @@ public class EnemyBehavior : MonoBehaviour
         // Notify the Respawn Script to handle respawning
         if (respawner != null)
         {
-            respawner.RespawnEnemy(gameObject, startPosition);
+            bool CanMove = enemy.CanMove;
+
+            respawner.RespawnEnemy(gameObject, startPosition, CanMove);
         }
     }
 
