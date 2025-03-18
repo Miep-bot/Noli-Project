@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -8581557265908714088}
   - component: {fileID: 5256099513347555188}
   m_Layer: 0
-  m_Name: IceCube
+  m_Name: IceCube_firstdraft
   m_TagString: IceCube
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
