@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class EnemyBehavior : MonoBehaviour
 {
@@ -18,6 +19,9 @@ public class EnemyBehavior : MonoBehaviour
 
     public EnemyMovement enemy;
 
+    public float pushBackForce = 10f; // The force with which the enemy is pushed back
+    private Rigidbody rb; // The Rigidbody of the enemy
+
     private void Start()
     {
         enemy = GameObject.FindWithTag("Enemy")?.GetComponent<EnemyMovement>();
@@ -28,6 +32,8 @@ public class EnemyBehavior : MonoBehaviour
         // Get the material component from the enemy
         enemyMaterial = GetComponent<Renderer>().material;
         originalColor = enemyMaterial.color;
+
+        rb = GetComponent<Rigidbody>(); // Get the Rigidbody component
 
         if (healthBarFill != null)
         {
@@ -46,6 +52,8 @@ public class EnemyBehavior : MonoBehaviour
         enemyMaterial = GetComponent<Renderer>().material;
         originalColor = enemyMaterial.color;
 
+        rb = GetComponent<Rigidbody>(); // Get the Rigidbody component
+
         if (healthBarFill != null)
         {
             UpdateHealthBar();
@@ -56,7 +64,15 @@ public class EnemyBehavior : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Fireball"))
+        Debug.Log("Collided with: " + collision.gameObject.name);
+
+        if (collision.gameObject.CompareTag("PlayerCollider"))
+        {
+            PushBack();
+
+            Debug.Log("player hit");
+        }
+        else if (collision.gameObject.CompareTag("Fireball"))
         {
             if (colorChangeCoroutine != null) StopCoroutine(colorChangeCoroutine);
             colorChangeCoroutine = StartCoroutine(FlashColor(collision.gameObject.GetComponent<Renderer>().material.color, 8, 1f, 0.1f));
@@ -75,6 +91,19 @@ public class EnemyBehavior : MonoBehaviour
 
                 TakeDamage(10f);
             }
+        }
+    }
+
+    private void PushBack()
+    {
+        // Get the direction to push the enemy (from the enemy to the player)
+        Vector3 pushDirection = transform.position - Camera.main.transform.position; // Assuming player is the camera (XR Origin)
+        pushDirection.y = 0;  // Remove the vertical component to only push on the x/z plane
+
+        // Apply a force to push the enemy back
+        if (rb != null)
+        {
+            rb.AddForce(pushDirection.normalized * pushBackForce, ForceMode.Impulse);
         }
     }
 
