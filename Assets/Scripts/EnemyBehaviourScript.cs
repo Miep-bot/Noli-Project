@@ -78,6 +78,7 @@ public class EnemyBehavior : MonoBehaviour
             colorChangeCoroutine = StartCoroutine(FlashColor(collision.gameObject.GetComponent<Renderer>().material.color, 8, 1f, 0.1f));
 
             TakeDamage(6f);
+            PushBack();
         }
         else if (collision.gameObject.CompareTag("IceCube"))
         {
@@ -90,6 +91,7 @@ public class EnemyBehavior : MonoBehaviour
                 colorChangeCoroutine = StartCoroutine(FreezeEffect(collision.gameObject.GetComponent<Renderer>().material.color, 4f, enemyMovement));
 
                 TakeDamage(10f);
+                PushBack();
             }
         }
     }

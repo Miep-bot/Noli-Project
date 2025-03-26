@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
+
 public class StarSpawner : MonoBehaviour
 {
     public GameObject starPrefab; // Assign in Inspector
@@ -11,11 +12,19 @@ public class StarSpawner : MonoBehaviour
     public float spawnDistance = 10f; // Distance in front of the player
     public float triangleSize = 0.5f; // Adjust to control triangle size
     public Image transparentImage;
+    private bool StarsEnabled;
 
     private bool starsSpawned = false;
     private List<GameObject> spawnedStars = new List<GameObject>();
 
     public Color firstStarColor = Color.blue;
+
+    private GameObject teleportProvider;
+
+    private void Start()
+    {
+        teleportProvider = GameObject.Find("Teleportation");
+    }
 
     public void ShowTransparentImage()
     {
@@ -44,10 +53,12 @@ public class StarSpawner : MonoBehaviour
         if (starsSpawned)
         {
             RemoveStars();
+            StarsEnabled = false;
         }
         else
         {
             SpawnStars();
+            StarsEnabled = true;
         }
     }
 
@@ -134,5 +145,19 @@ public class StarSpawner : MonoBehaviour
             return spawnedStars[index].transform.position;
         }
         return Vector3.zero;
+    }
+
+    private void Update()
+    {
+        if (teleportProvider != null)
+        {
+            if (StarsEnabled) {
+                teleportProvider.SetActive(false);
+            }
+            else if (!StarsEnabled)
+            {
+                teleportProvider.SetActive(true);
+            }
+        }
     }
 }
