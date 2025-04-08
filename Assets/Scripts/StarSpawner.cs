@@ -26,20 +26,8 @@ public class StarSpawner : MonoBehaviour
         teleportProvider = GameObject.Find("Teleportation");
     }
 
-    public void ShowTransparentImage()
-    {
-        transparentImage.gameObject.SetActive(true);
-    }
-
-    // Call this when you want to hide the transparent image
-    public void HideTransparentImage()
-    {
-        transparentImage.gameObject.SetActive(false);
-    }
-
     private void OnEnable()
     {
-        HideTransparentImage();
         spawnAction.action.performed += ToggleStars;
     }
 
@@ -65,7 +53,6 @@ public class StarSpawner : MonoBehaviour
     private void SpawnStars()
     {
         Time.timeScale = 0f;
-        ShowTransparentImage();
 
         if (cameraTransform == null)
         {
@@ -135,7 +122,6 @@ public class StarSpawner : MonoBehaviour
         spawnedStars.Clear();
         starsSpawned = false;
         Time.timeScale = 1f;
-        HideTransparentImage();
     }
 
     public Vector3 GetStarPosition(int index)
