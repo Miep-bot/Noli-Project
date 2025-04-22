@@ -25,12 +25,15 @@ public class StarConnector : MonoBehaviour
     private bool isThrowing = false;
     private bool isFireballThrown = false; // Flag to check if the fireball is thrown
 
+    private GameObject teleportProvider;
+
     private void OnEnable()
     {
         connectAction.action.performed += StartConnecting;
         connectAction.action.canceled += StopConnecting;
         throwAction.action.started += StartThrowing; // Start tracking the controller for throwing
         throwAction.action.canceled += StopThrowing; // When button is released, throw the fireball
+        teleportProvider = GameObject.Find("Teleportation");
     }
 
     private void OnDisable()
@@ -116,10 +119,12 @@ public class StarConnector : MonoBehaviour
             if (connectedStarsCount == 3 && IsTriangle())
             {
                 SpawnObjectNextToController(objectToSpawn); // Spawn Fireball
+                teleportProvider.SetActive(true);
             }
             else if (connectedStarsCount == 4 && IsSquare())
             {
                 SpawnObjectNextToController(iceCubePrefab); // Spawn Ice Cube
+                teleportProvider.SetActive(true);
             }
         }
     }

@@ -50,7 +50,7 @@ public class PlayerHealth : MonoBehaviour
             Debug.Log("Health Percentage: " + healthPercentage);  // Debugging line
 
             // Assuming the health bar is using a RectTransform for scaling
-            healthBarFill.sizeDelta = new Vector2(healthPercentage * 2, healthBarFill.sizeDelta.y);  // Scale the health bar
+            healthBarFill.sizeDelta = new Vector2(healthPercentage / 50, healthBarFill.sizeDelta.y);  // Scale the health bar
         }
     }
 }

@@ -11,6 +11,8 @@ TagManager:
   - Enemy
   - Enemy Moving
   - PlayerCollider
+  - Spawn1
+  - FallsInfo
   layers:
   - Default
   - TransparentFX

@@ -239,4 +239,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   growFactor: 1.2
   growSpeed: 5
-  hoverColor: {r: 0, g: 0.88639784, b: 1, a: 1}
+  hoverColor: {r: 0.41320753, g: 0.9312767, b: 1, a: 1}

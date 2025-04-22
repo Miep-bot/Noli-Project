@@ -1,34 +1,29 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyRespawner : MonoBehaviour
 {
-    public float respawnTime = 3f; // Time before enemy reappears
     public GameObject EnemyPrefab;
+    public List<Transform> spawnPoints; // Drag empty GameObjects here in the inspector
 
-    public void RespawnEnemy(GameObject enemy, Vector3 spawnPosition, bool canMove)
+    public void SpawnEnemies()
     {
-        StartCoroutine(RespawnCoroutine(enemy, spawnPosition, canMove));
-    }
-
-    private IEnumerator RespawnCoroutine(GameObject enemy, Vector3 spawnPosition, bool canMove)
-    {
-        Destroy(enemy);
-
-        yield return new WaitForSeconds(respawnTime); // Wait for respawn time
-
-        GameObject newEnemy = Instantiate(EnemyPrefab, spawnPosition, Quaternion.identity);
-
-        // Assign references
-        EnemyBehavior enemyBehavior = newEnemy.GetComponent<EnemyBehavior>();
-        if (enemyBehavior != null)
+        foreach (Transform spawnPoint in spawnPoints)
         {
-            enemyBehavior.respawner = this; // Assign this respawner script to new enemy
-        }
+            GameObject newEnemy = Instantiate(EnemyPrefab, spawnPoint.position, Quaternion.identity);
 
-        EnemyMovement enemyMovement = newEnemy.GetComponent<EnemyMovement>();
-        if (canMove) {
-            enemyMovement.CanMove = true;
+            EnemyBehavior enemyBehavior = newEnemy.GetComponent<EnemyBehavior>();
+            if (enemyBehavior != null)
+            {
+                enemyBehavior.respawner = this;
+            }
+
+            EnemyMovement enemyMovement = newEnemy.GetComponent<EnemyMovement>();
+            if (enemyMovement != null)
+            {
+                enemyMovement.CanMove = true; // You can customize this if needed
+            }
         }
     }
 }

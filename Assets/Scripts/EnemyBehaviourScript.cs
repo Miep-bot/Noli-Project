@@ -163,9 +163,7 @@ public class EnemyBehavior : MonoBehaviour
         // Notify the Respawn Script to handle respawning
         if (respawner != null)
         {
-            bool CanMove = enemy.CanMove;
-
-            respawner.RespawnEnemy(gameObject, startPosition, CanMove);
+            Destroy(gameObject);
         }
     }
 
