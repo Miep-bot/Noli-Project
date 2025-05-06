@@ -19,7 +19,7 @@ public class PlayerHealth : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            TakeDamage(20f);  // Lose 20 health per enemy touch (adjust as needed)
+            TakeDamage(10f);  // Lose 20 health per enemy touch (adjust as needed)
             UpdateHealthBar();
         }
     }

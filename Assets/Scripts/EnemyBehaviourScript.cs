@@ -27,7 +27,7 @@ public class EnemyBehavior : MonoBehaviour
         enemy = GameObject.FindWithTag("Enemy")?.GetComponent<EnemyMovement>();
 
         // Initialize health
-        currentHealth = maxHealth;
+        currentHealth = currentHealth;
 
         // Get the material component from the enemy
         enemyMaterial = GetComponent<Renderer>().material;
