@@ -39,8 +39,6 @@ public class EnemyBehavior : MonoBehaviour
         {
             UpdateHealthBar();
         }
-
-        UpdateHealthBar();
     }
 
     private void OnEnable()
@@ -62,8 +60,6 @@ public class EnemyBehavior : MonoBehaviour
         }
 
         startPosition = transform.position;
-
-        UpdateHealthBar();
     }
 
     private void OnCollisionEnter(Collision collision)
