@@ -16,11 +16,15 @@ public class EnemyMovement : MonoBehaviour
     {
         // Save the starting position of the enemy
         startPosition = transform.position;
+
+        transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+
         rb = GetComponent<Rigidbody>();  // Get the Rigidbody component
         player = GameObject.FindWithTag("Player").transform; // Find the player using the "Player" tag
 
         // Lock the Y-axis rotation of the enemy (if needed)
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
     }
 
     private void FixedUpdate()
