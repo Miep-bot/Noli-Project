@@ -9,6 +9,7 @@ public class EnemyManager : MonoBehaviour
     public MoveObjectUp objectToMoveUp2;
 
     public GameObject objectToReveal;
+    public GameObject objectToReveal2;
 
     private int nextEnemyID = 1;
     private Dictionary<int, GameObject> activeEnemies = new Dictionary<int, GameObject>();
@@ -20,6 +21,8 @@ public class EnemyManager : MonoBehaviour
 
     private List<int> thirdToSixthEnemyIDs = new List<int>();
     private bool triggeredThirdToSixthDeathEvent = false;
+
+    private bool triggeredSeventhDeathEvent = false;
 
     private void Awake()
     {
@@ -77,6 +80,14 @@ public class EnemyManager : MonoBehaviour
             triggeredThirdToSixthDeathEvent = true;
             OnThirdToSixthEnemiesDied();
         }
+
+        // Check if the 7th enemy has died
+        if (!triggeredSeventhDeathEvent && enemiesThatHaveDied.Contains(7))
+        {
+            triggeredSeventhDeathEvent = true;
+            OnSeventhEnemyDied();
+        }
+
     }
 
     private void OnFirstTwoEnemiesDied()
@@ -101,4 +112,15 @@ public class EnemyManager : MonoBehaviour
             objectToMoveUp2.StartRising();
         }
     }
+
+    private void OnSeventhEnemyDied()
+    {
+        Debug.Log("The 7th enemy has died!");
+
+        if (objectToReveal2 != null)
+        {
+            objectToReveal2.SetActive(true);
+        }
+    }
+
 }
