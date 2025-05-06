@@ -8,7 +8,7 @@ public class SpawnTrigger : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Fireball"))
+        if (collision.gameObject.CompareTag("Fireball")||collision.gameObject.CompareTag("IceCube"))
         {
             if (objectToReveal != null)
             {

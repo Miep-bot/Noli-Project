@@ -163,6 +163,12 @@ public class EnemyBehavior : MonoBehaviour
         // Notify the Respawn Script to handle respawning
         if (respawner != null)
         {
+            EnemyIdentifier id = GetComponent<EnemyIdentifier>();
+            if (id != null)
+            {
+                EnemyManager.Instance.UnregisterEnemy(id.enemyID);
+            }
+
             Destroy(gameObject);
         }
     }

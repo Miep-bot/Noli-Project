@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: -2545244925233087948}
   - component: {fileID: 8513952026887089929}
   m_Layer: 6
-  m_Name: Enemy
+  m_Name: Queen
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -33,8 +33,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.5, y: 0.53, z: -0.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 6259716743973198633}
   m_Father: {fileID: 0}
@@ -117,13 +117,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9ec3d4d91dc87b469e47360e9272b74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  maxHealth: 500
   currentHealth: 0
   healthBar: {fileID: 8478793141943308019}
   healthBarFill: {fileID: 9035427433273295437}
   respawner: {fileID: 0}
   enemy: {fileID: 0}
-  pushBackForce: 10
+  pushBackForce: 6
 --- !u!65 &5810875746865027943
 BoxCollider:
   m_ObjectHideFlags: 0

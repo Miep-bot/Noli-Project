@@ -171,6 +171,8 @@ public class StarConnector : MonoBehaviour
 
     private void SpawnObjectNextToController(GameObject spellPrefab)
     {
+        teleportProvider.SetActive(true);
+
         if (rightRayInteractor != null && spellPrefab != null)
         {
             Transform controllerTransform = rightRayInteractor.transform;
@@ -178,6 +180,8 @@ public class StarConnector : MonoBehaviour
 
             if (spawnedFireball != null) // Destroy previous spell object
             {
+                teleportProvider.SetActive(true);
+
                 Destroy(spawnedFireball);
             }
 
@@ -186,6 +190,8 @@ public class StarConnector : MonoBehaviour
 
             if (spawnedFireball != null)
             {
+                teleportProvider.SetActive(true);
+
                 Rigidbody spellRigidbody = spawnedFireball.GetComponent<Rigidbody>();
                 if (spellRigidbody != null)
                 {
@@ -203,8 +209,12 @@ public class StarConnector : MonoBehaviour
 
     private void AttachFireballToController()
     {
+        teleportProvider.SetActive(true);
+
         if (spawnedFireball != null && rightRayInteractor != null)
         {
+            teleportProvider.SetActive(true);
+
             // Attach the fireball to the controller (keep it close to the controller's position)
             spawnedFireball.transform.position = rightRayInteractor.transform.position + rightRayInteractor.transform.forward * 0.2f;
             spawnedFireball.transform.rotation = rightRayInteractor.transform.rotation;
@@ -213,6 +223,8 @@ public class StarConnector : MonoBehaviour
 
     private void ThrowFireball()
     {
+        teleportProvider.SetActive(true);
+
         if (spawnedFireball != null)
         {
             isFireballThrown = true;
@@ -256,6 +268,8 @@ public class StarConnector : MonoBehaviour
             {
                 Debug.LogError("Fireball does not have a Rigidbody component!");
             }
+
+            teleportProvider.SetActive(true);
         }
     }
 
@@ -292,6 +306,8 @@ public class StarConnector : MonoBehaviour
 
     private void ClearAllLines()
     {
+        teleportProvider.SetActive(true);
+
         foreach (GameObject line in allLines)
         {
             Destroy(line);

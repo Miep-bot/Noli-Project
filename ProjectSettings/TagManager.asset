@@ -13,6 +13,8 @@ TagManager:
   - PlayerCollider
   - Spawn1
   - FallsInfo
+  - EnemyTrigger
+  - WallInfo
   layers:
   - Default
   - TransparentFX
